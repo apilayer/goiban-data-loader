@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/fourcube/goiban"
+	co "github.com/fourcube/goiban/countries"
 	_ "github.com/go-sql-driver/mysql"
 
 )
@@ -41,10 +42,10 @@ func main() {
 	default:
 		fmt.Println("unknown target")
 	case "bb":
-		go goiban.ReadFileToEntries(bundesbankFile, &goiban.BundesbankFileEntry{}, ch)
+		go goiban.ReadFileToEntries(bundesbankFile, &co.BundesbankFileEntry{}, ch)
 		
 		for entry := range ch {
-			bbEntry := entry.(*goiban.BundesbankFileEntry)
+			bbEntry := entry.(*co.BundesbankFileEntry)
 			if bbEntry.M == 1 {
 				_, err := INSERT_BANK_DATA.Exec(
 					bbEntry.Bankcode,
