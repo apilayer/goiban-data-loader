@@ -4,6 +4,7 @@ import (
 	"os"
 	"database/sql"
 	"fmt"
+	"log"
 	"github.com/fourcube/goiban"
 	co "github.com/fourcube/goiban/countries"
 	_ "github.com/go-sql-driver/mysql"
@@ -25,16 +26,27 @@ var (
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader bb root:root@/goiban")
+		fmt.Println("e.g: goiban-data-loader bb root:root@/goiban?charset=utf8")
 		return
 	}
 	target := os.Args[1]	
 	db, err = sql.Open("mysql", os.Args[2])
 
-	INSERT_BANK_DATA, PREP_ERR = db.Prepare(`INSERT INTO BANK_DATA
+	if err != nil {
+		log.Fatalf("DB Connection error: %v", err)
+		return
+	}
+
+	INSERT_BANK_DATA, err = db.Prepare(`INSERT INTO BANK_DATA
 		(id, bankcode, name, zip, city, bic, country, algorithm, created, last_update)
 		VALUES
 		(NULL, ?, ?, ?, ?, ?, ?, ?, NULL, NULL);`)
+
+	if err != nil {
+		log.Fatalf("Error while preparing statement: %v", err)
+		return
+	}
+
 	ch := make(chan interface{})
 	rows := 0
 	
@@ -58,7 +70,7 @@ func main() {
 				if err == nil {
 					rows++
 				} else {
-					fmt.Println(err, bbEntry)
+					log.Fatal(err, bbEntry)
 				}
 			}
 		}
