@@ -26,9 +26,10 @@ var (
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader bb root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader bundesbank root:root@/goiban?charset=utf8")
 		return
 	}
+
 	target := os.Args[1]	
 	db, err = sql.Open("mysql", os.Args[2])
 
@@ -38,9 +39,9 @@ func main() {
 	}
 
 	INSERT_BANK_DATA, err = db.Prepare(`INSERT INTO BANK_DATA
-		(id, bankcode, name, zip, city, bic, country, algorithm, created, last_update)
+		(id, source, bankcode, name, zip, city, bic, country, algorithm, created, last_update)
 		VALUES
-		(NULL, ?, ?, ?, ?, ?, ?, ?, NULL, NULL);`)
+		(NULL, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL);`)
 
 	if err != nil {
 		log.Fatalf("Error while preparing statement: %v", err)
@@ -53,13 +54,15 @@ func main() {
 	switch target {
 	default:
 		fmt.Println("unknown target")
-	case "bb":
+	case "bundesbank":
 		go goiban.ReadFileToEntries(bundesbankFile, &co.BundesbankFileEntry{}, ch)
 		
+		source := "GERMAN_BUNDESBANK"
 		for entry := range ch {
 			bbEntry := entry.(*co.BundesbankFileEntry)
 			if bbEntry.M == 1 {
 				_, err := INSERT_BANK_DATA.Exec(
+					source,
 					bbEntry.Bankcode,
 					bbEntry.Name,
 					bbEntry.Zip,
