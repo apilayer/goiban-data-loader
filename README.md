@@ -5,6 +5,15 @@ Used to load data into the MySQL db used at openiban.com.
 
 The Loader only supports the schema of the German Bundesbank at the moment. The txt file has to be placed under data/.
 
+Running
+-------
+
+You should load the data into a database called 'goiban'.
+
+```
+go run loader.go bundesbank mysql_user:password@localhost/goiban?charset=utf8
+```
+
 The MIT License (MIT)
 ---------------
 Copyright (c) 2013 Chris Grieger
