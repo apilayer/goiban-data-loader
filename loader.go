@@ -16,12 +16,47 @@ import (
 var (
 	db *sql.DB
 	err error
-	bundesbankFile = "data/bundesbank.txt"  
+	bundesbankFile = "data/bundesbank.txt"
 	PREP_ERR error
-	INSERT_BANK_DATA *sql.Stmt 
-	
+	INSERT_BANK_DATA *sql.Stmt
+	SELECT_SOURCE_ID *sql.Stmt
+
 )
 
+func prepareStatements() error {
+	INSERT_BANK_DATA, err = db.Prepare(`INSERT INTO BANK_DATA
+		(id, source, bankcode, name, zip, city, bic, country, algorithm, created, last_update)
+		VALUES
+		(NULL, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL);`)
+
+	if err != nil {
+		log.Fatalf("Error while preparing statement: %v", err)
+		return err
+	}
+
+	SELECT_SOURCE_ID, err = db.Prepare(`SELECT id FROM DATA_SOURCE where name = ?;`)
+
+	if err != nil {
+		log.Fatalf("Error while preparing statement: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func getDataSourceId(sourceName string) (int, error) {
+	var id int
+	result := SELECT_SOURCE_ID.QueryRow(sourceName)
+
+	err := result.Scan(&id)
+
+	if err != nil {
+		log.Fatalf("Data source %v not found: %v", sourceName, err)
+		return -1, err
+	}
+
+	return id, nil
+}
 
 func main() {
 	if len(os.Args) < 3 {
@@ -30,7 +65,7 @@ func main() {
 		return
 	}
 
-	target := os.Args[1]	
+	target := os.Args[1]
 	db, err = sql.Open("mysql", os.Args[2])
 
 	if err != nil {
@@ -38,31 +73,39 @@ func main() {
 		return
 	}
 
-	INSERT_BANK_DATA, err = db.Prepare(`INSERT INTO BANK_DATA
-		(id, source, bankcode, name, zip, city, bic, country, algorithm, created, last_update)
-		VALUES
-		(NULL, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL);`)
+	err = prepareStatements()
 
 	if err != nil {
-		log.Fatalf("Error while preparing statement: %v", err)
+		log.Fatalf("DB Prepare Statement error: %v", err)
 		return
 	}
 
+
 	ch := make(chan interface{})
 	rows := 0
-	
+
 	switch target {
 	default:
 		fmt.Println("unknown target")
 	case "bundesbank":
 		go goiban.ReadFileToEntries(bundesbankFile, &co.BundesbankFileEntry{}, ch)
-		
-		source := "GERMAN_BUNDESBANK"
+
+		source := "German Bundesbank"
+		sourceId, err := getDataSourceId(source)
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId);
+
 		for entry := range ch {
 			bbEntry := entry.(*co.BundesbankFileEntry)
 			if bbEntry.M == 1 {
 				_, err := INSERT_BANK_DATA.Exec(
-					source,
+					sourceId,
 					bbEntry.Bankcode,
 					bbEntry.Name,
 					bbEntry.Zip,
@@ -80,6 +123,6 @@ func main() {
 
 	}
 
-	fmt.Println("Loaded", rows, "for", target);
+	log.Printf("Loaded %v for source '%v'", rows, target);
 
 }

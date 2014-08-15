@@ -2,6 +2,15 @@
 
 */
 USE goiban;
+DROP TABLE IF EXISTS DATA_SOURCE;
+CREATE TABLE DATA_SOURCE (
+	id INT PRIMARY KEY,
+	name VARCHAR(255) UNIQUE
+) Engine=MyISAM, DEFAULT CHARSET=utf8;
+
+INSERT INTO DATA_SOURCE (id, name) VALUES
+(1, "German Bundesbank");
+
 DROP TABLE IF EXISTS BANK_DATA;
 CREATE TABLE BANK_DATA (
 	id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -17,5 +26,7 @@ CREATE TABLE BANK_DATA (
 	last_update TIMESTAMP,
 	INDEX bankcode_index (bankcode asc),
 	INDEX bic_index (bic asc),
-	UNIQUE INDEX (bankcode, country, bic)
-) Engine=InnoDB, DEFAULT CHARSET=utf8;
+	INDEX source_id (source),
+	UNIQUE INDEX (bankcode, country, bic),
+	FOREIGN KEY (source) references DATA_SOURCE(id)
+) Engine=MyISAM, DEFAULT CHARSET=utf8;
