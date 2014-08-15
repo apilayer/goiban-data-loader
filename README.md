@@ -16,7 +16,7 @@ go run loader.go bundesbank mysql_user:password@localhost/goiban?charset=utf8
 
 The MIT License (MIT)
 ---------------
-Copyright (c) 2013 Chris Grieger
+Copyright (c) 2014 Chris Grieger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
