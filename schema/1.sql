@@ -21,7 +21,7 @@ CREATE TABLE BANK_DATA (
 	city VARCHAR(255),
 	bic VARCHAR(12),
 	country VARCHAR(2) NULL,	# ISO-3160
-	algorithm VARCHAR(10),		# identified for checksum algorithm
+	algorithm VARCHAR(10),		# identifier for checksum algorithm
 	created TIMESTAMP,
 	last_update TIMESTAMP,
 	INDEX bankcode_index (bankcode asc),
