@@ -1,26 +1,24 @@
 package main
 
 import (
-	"os"
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+
 	"github.com/fourcube/goiban"
 	co "github.com/fourcube/goiban/countries"
 	_ "github.com/go-sql-driver/mysql"
-
 )
 
-
-
 var (
-	db *sql.DB
-	err error
-	bundesbankFile = "data/bundesbank.txt"
-	PREP_ERR error
+	db               *sql.DB
+	err              error
+	bundesbankFile   = "data/bundesbank.txt"
+	nbbFile          = "data/nbb.xlsx"
+	PREP_ERR         error
 	INSERT_BANK_DATA *sql.Stmt
 	SELECT_SOURCE_ID *sql.Stmt
-
 )
 
 func prepareStatements() error {
@@ -61,7 +59,7 @@ func getDataSourceId(sourceName string) (int, error) {
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader bundesbank root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb> root:root@/goiban?charset=utf8")
 		return
 	}
 
@@ -79,7 +77,6 @@ func main() {
 		log.Fatalf("DB Prepare Statement error: %v", err)
 		return
 	}
-
 
 	ch := make(chan interface{})
 	rows := 0
@@ -99,7 +96,7 @@ func main() {
 		}
 
 		log.Printf("Removing entries for source '%v'", source)
-		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId);
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
 
 		for entry := range ch {
 			bbEntry := entry.(*co.BundesbankFileEntry)
@@ -120,9 +117,41 @@ func main() {
 				}
 			}
 		}
+	case "nbb":
+		go goiban.ReadFileToEntries(nbbFile, &co.BelgiumFileEntry{}, ch)
 
+		source := "NBB"
+		sourceId, err := getDataSourceId(source)
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			entries := entry.([]co.BelgiumFileEntry)
+			for _, nbbEntry := range entries {
+				_, err := INSERT_BANK_DATA.Exec(
+					sourceId,
+					nbbEntry.Bankcode,
+					nbbEntry.Name,
+					"",
+					"",
+					nbbEntry.Bic,
+					"BE",
+					"")
+				if err == nil {
+					rows++
+				} else {
+					log.Fatal(err, nbbEntry)
+				}
+			}
+		}
 	}
 
-	log.Printf("Loaded %v for source '%v'", rows, target);
+	log.Printf("Loaded %v for source '%v'", rows, target)
 
 }
