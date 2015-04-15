@@ -16,6 +16,7 @@ var (
 	err              error
 	bundesbankFile   = "data/bundesbank.txt"
 	nbbFile          = "data/nbb.xlsx"
+	netherlandsFile  = "data/nl.xlsx"
 	PREP_ERR         error
 	INSERT_BANK_DATA *sql.Stmt
 	SELECT_SOURCE_ID *sql.Stmt
@@ -59,7 +60,7 @@ func getDataSourceId(sourceName string) (int, error) {
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb> root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|netherlands> root:root@/goiban?charset=utf8")
 		return
 	}
 
@@ -148,6 +149,37 @@ func main() {
 				} else {
 					log.Fatal(err, nbbEntry)
 				}
+			}
+		}
+	case "nl":
+		go goiban.ReadFileToEntries(netherlandsFile, &co.NetherlandsFileEntry{}, ch)
+
+		source := "NL"
+		sourceId, err := getDataSourceId(source)
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			nlEntry := entry.(co.NetherlandsFileEntry)
+			_, err := INSERT_BANK_DATA.Exec(
+				sourceId,
+				nlEntry.Bankcode,
+				nlEntry.Name,
+				"",
+				"",
+				nlEntry.Bic,
+				"NL",
+				"")
+			if err == nil {
+				rows++
+			} else {
+				log.Fatal(err, nlEntry)
 			}
 		}
 	}
