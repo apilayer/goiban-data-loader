@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/fourcube/goiban"
 	co "github.com/fourcube/goiban/countries"
@@ -60,7 +61,7 @@ func getDataSourceId(sourceName string) (int, error) {
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|netherlands> root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|nl> root:root@/goiban?charset=utf8")
 		return
 	}
 
@@ -101,6 +102,9 @@ func main() {
 
 		for entry := range ch {
 			bbEntry := entry.(*co.BundesbankFileEntry)
+
+			bic := strings.Replace(bbEntry.Bic, " ", "", -1)
+
 			if bbEntry.M == 1 {
 				_, err := INSERT_BANK_DATA.Exec(
 					sourceId,
@@ -108,7 +112,7 @@ func main() {
 					bbEntry.Name,
 					bbEntry.Zip,
 					bbEntry.City,
-					bbEntry.Bic,
+					bic,
 					"DE",
 					bbEntry.CheckAlgo)
 				if err == nil {
@@ -135,13 +139,16 @@ func main() {
 		for entry := range ch {
 			entries := entry.([]co.BelgiumFileEntry)
 			for _, nbbEntry := range entries {
+				// Remove spaces from BIC
+				bic := strings.Replace(nbbEntry.Bic, " ", "", -1)
+
 				_, err := INSERT_BANK_DATA.Exec(
 					sourceId,
 					nbbEntry.Bankcode,
 					nbbEntry.Name,
 					"",
 					"",
-					nbbEntry.Bic,
+					bic,
 					"BE",
 					"")
 				if err == nil {
@@ -167,13 +174,16 @@ func main() {
 
 		for entry := range ch {
 			nlEntry := entry.(co.NetherlandsFileEntry)
+
+			bic := strings.Replace(nlEntry.Bic, " ", "", -1)
+
 			_, err := INSERT_BANK_DATA.Exec(
 				sourceId,
 				nlEntry.Bankcode,
 				nlEntry.Name,
 				"",
 				"",
-				nlEntry.Bic,
+				bic,
 				"NL",
 				"")
 			if err == nil {
