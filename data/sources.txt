@@ -1,0 +1,3 @@
+NL: http://www.betaalvereniging.nl/wp-uploads/2013/07/BIC-lijst-NL.xlsx
+BE: https://www.nbb.be/de/zahlungssysteme/zahlungsnormen/bankidentifikationscodes
+DE: https://www.bundesbank.de/Redaktion/DE/Standardartikel/Aufgaben/Unbarer_Zahlungsverkehr/bankleitzahlen_download.html
