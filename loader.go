@@ -229,7 +229,7 @@ func main() {
 				"",
 				"",
 				bic,
-				"NL",
+				"LU",
 				"")
 			if err == nil {
 				rows++
