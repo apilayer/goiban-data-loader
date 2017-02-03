@@ -291,6 +291,105 @@ func main() {
 				log.Fatal(err, chEntry)
 			}
 		}
+	case "li":
+		go goiban.ReadFileToEntries(liechtensteinFile, &co.LiechtensteinFileEntry{}, ch)
+
+		source := "LI"
+		sourceId, err := getDataSourceId(source)
+		uniqueEntries := map[string]co.LiechtensteinFileEntry{}
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			chEntry := entry.(co.LiechtensteinFileEntry)
+
+			if strings.TrimSpace(chEntry.Bankcode) == "" {
+				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
+				continue
+			}
+
+			if strings.TrimSpace(chEntry.Bic) == "" {
+				log.Printf("Skipping invalid entry without BIC %v", chEntry)
+				continue
+			}
+
+			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
+
+			uniqueEntries[chEntry.Bankcode] = chEntry
+		}
+
+		for _, chEntry := range uniqueEntries {
+			_, err := INSERT_BANK_DATA.Exec(
+				sourceId,
+				chEntry.Bankcode,
+				chEntry.Name,
+				"",
+				"",
+				chEntry.Bic,
+				source,
+				"")
+			if err == nil {
+				rows++
+			} else {
+				log.Fatal(err, chEntry)
+			}
+		}
+	case "at":
+		go goiban.ReadFileToEntries(austriaFile, &co.AustriaBankFileEntry{}, ch)
+
+		source := "AT"
+		sourceId, err := getDataSourceId(source)
+		uniqueEntries := map[string]co.AustriaBankFileEntry{}
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			chEntry := entry.(co.AustriaBankFileEntry)
+
+			if strings.TrimSpace(chEntry.Bankcode) == "" {
+				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
+				continue
+			}
+
+			if strings.TrimSpace(chEntry.Bic) == "" {
+				log.Printf("Skipping invalid entry without BIC %v", chEntry)
+				continue
+			}
+
+			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
+
+			uniqueEntries[chEntry.Bankcode] = chEntry
+		}
+
+		for _, chEntry := range uniqueEntries {
+			_, err := INSERT_BANK_DATA.Exec(
+				sourceId,
+				chEntry.Bankcode,
+				chEntry.Name,
+				"",
+				"",
+				chEntry.Bic,
+				source,
+				"")
+			if err == nil {
+				rows++
+			} else {
+				log.Fatal(err, chEntry)
+			}
+		}
+
 	}
 
 	log.Printf("Loaded %v for source '%v'", rows, target)
