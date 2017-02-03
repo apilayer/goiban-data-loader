@@ -7,19 +7,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fourcube/goiban"
-	co "github.com/fourcube/goiban/countries"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/stefan93/goiban"
+	co "github.com/stefan93/goiban/countries"
 )
 
 var (
-	db              *sql.DB
-	err             error
-	bundesbankFile  = "data/bundesbank.txt"
-	nbbFile         = "data/nbb.xlsx"
-	netherlandsFile = "data/nl.xlsx"
-	luxembourgFile  = "data/lu.xlsx"
-	switzerlandFile = "data/ch.xlsx"
+	db                *sql.DB
+	err               error
+	bundesbankFile    = "data/bundesbank.txt"
+	nbbFile           = "data/nbb.xlsx"
+	netherlandsFile   = "data/nl.xlsx"
+	luxembourgFile    = "data/lu.xlsx"
+	switzerlandFile   = "data/ch.txt"
+	austriaFile       = "data/au.csv"
+	liechtensteinFile = "data/li.xlsx"
 
 	PREP_ERR         error
 	INSERT_BANK_DATA *sql.Stmt
@@ -241,11 +243,11 @@ func main() {
 		}
 
 	case "ch":
-		go goiban.ReadFileToEntries(switzerlandFile, &co.SwitzerlandFileEntry{}, ch)
+		go goiban.ReadFileToEntries(switzerlandFile, &co.SwitzerlandBankFileEntry{}, ch)
 
 		source := "CH"
 		sourceId, err := getDataSourceId(source)
-		uniqueEntries := map[string]co.SwitzerlandFileEntry{}
+		uniqueEntries := map[string]co.SwitzerlandBankFileEntry{}
 
 		if err != nil {
 			log.Fatalf("Aborting: %v", err)
@@ -256,9 +258,9 @@ func main() {
 		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
 
 		for entry := range ch {
-			chEntry := entry.(co.SwitzerlandFileEntry)
+			chEntry := entry.(co.SwitzerlandBankFileEntry)
 
-			if strings.TrimSpace(chEntry.Bankcode) == "" {
+			if strings.TrimSpace(chEntry.BankCode) == "" {
 				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
 				continue
 			}
@@ -270,16 +272,16 @@ func main() {
 
 			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
 
-			uniqueEntries[chEntry.Bankcode] = chEntry
+			uniqueEntries[chEntry.BankCode] = chEntry
 		}
 
 		for _, chEntry := range uniqueEntries {
 			_, err := INSERT_BANK_DATA.Exec(
 				sourceId,
-				chEntry.Bankcode,
-				chEntry.Name,
-				"",
-				"",
+				chEntry.BankCode,
+				chEntry.BankName,
+				chEntry.Zip,
+				chEntry.Place,
 				chEntry.Bic,
 				source,
 				"")
