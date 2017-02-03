@@ -1,40 +1,6 @@
-goiban-data-loader
-=======
-
-Used to load data into the MySQL db used at openiban.com.
-
-Currently supported data sources:
-
-- bundebank
-- lu
-- nbb
-- nl
-
-Setting up the database
--------
-
-```bash
-$ DATABASE_URL="mysql_user:password@localhost/goiban?charset=utf8" make migrate
-```
-
-Running
--------
-
-You should load the data into a database called 'goiban'.
-
-```
-go run loader.go bundesbank mysql_user:password@localhost/goiban?charset=utf8
-```
-
-MySQL development instance
--------
-To run MySQL inside a docker container you can use the following command:
-
-`docker run -d --name openiban-mysql -p3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=goiban mysql`
-
 The MIT License (MIT)
----------------
-Copyright (c) 2014 Chris Grieger
+
+Copyright (c) 2013-2017 Chris Grieger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

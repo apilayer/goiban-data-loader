@@ -1,8 +1,5 @@
-/*
 
-*/
-USE goiban;
-DROP TABLE IF EXISTS DATA_SOURCE;
+-- +goose Up
 CREATE TABLE DATA_SOURCE (
 	id INT PRIMARY KEY,
 	name VARCHAR(255) UNIQUE
@@ -17,7 +14,6 @@ INSERT INTO DATA_SOURCE (id, name) VALUES
 INSERT INTO DATA_SOURCE (id, name) VALUES
 (3, "NL");
 
-DROP TABLE IF EXISTS BANK_DATA;
 CREATE TABLE BANK_DATA (
 	id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	source VARCHAR(255) NOT NULL,
@@ -28,11 +24,15 @@ CREATE TABLE BANK_DATA (
 	bic VARCHAR(12),
 	country VARCHAR(2) NULL,	# ISO-3160
 	algorithm VARCHAR(10),		# identifier for checksum algorithm
-	created TIMESTAMP,
-	last_update TIMESTAMP,
+	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	INDEX bankcode_index (bankcode asc),
 	INDEX bic_index (bic asc),
 	INDEX source_id (source),
 	UNIQUE INDEX (bankcode, country, bic),
 	FOREIGN KEY (source) references DATA_SOURCE(id)
 ) Engine=MyISAM, DEFAULT CHARSET=utf8;
+
+-- +goose Down
+DROP TABLE IF EXISTS DATA_SOURCE;
+DROP TABLE IF EXISTS BANK_DATA;
