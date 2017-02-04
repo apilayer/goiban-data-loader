@@ -20,7 +20,7 @@ var (
 	netherlandsFile   = "data/nl.xlsx"
 	luxembourgFile    = "data/lu.xlsx"
 	switzerlandFile   = "data/ch.txt"
-	austriaFile       = "data/au.csv"
+	austriaFile       = "data/at.csv"
 	liechtensteinFile = "data/li.xlsx"
 
 	PREP_ERR         error

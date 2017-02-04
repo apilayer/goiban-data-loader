@@ -9,6 +9,9 @@ Currently supported data sources:
 - lu
 - nbb
 - nl
+- at
+- ch
+- li
 
 Setting up the database
 -------
