@@ -66,7 +66,7 @@ func getDataSourceId(sourceName string) (int, error) {
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|nl|lu|ch> root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|nl|lu|at|ch|li> root:root@/goiban?charset=utf8")
 		return
 	}
 
