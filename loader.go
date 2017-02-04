@@ -246,7 +246,6 @@ func main() {
 
 		source := "CH"
 		sourceId, err := getDataSourceId(source)
-		err = nil
 		uniqueEntries := map[string]co.SwitzerlandBankFileEntry{}
 
 		if err != nil {
@@ -369,7 +368,6 @@ func main() {
 			}
 
 			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
-
 			uniqueEntries[chEntry.Bankcode] = *chEntry
 		}
 
