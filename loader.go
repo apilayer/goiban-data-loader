@@ -20,7 +20,7 @@ var (
 	netherlandsFile   = "data/nl.xlsx"
 	luxembourgFile    = "data/lu.xlsx"
 	switzerlandFile   = "data/ch.txt"
-	austriaFile       = "data/au.csv"
+	austriaFile       = "data/at.csv"
 	liechtensteinFile = "data/li.xlsx"
 
 	PREP_ERR         error
@@ -72,7 +72,6 @@ func main() {
 
 	target := os.Args[1]
 	db, err = sql.Open("mysql", os.Args[2])
-
 	if err != nil {
 		log.Fatalf("DB Connection error: %v", err)
 		return
@@ -247,6 +246,7 @@ func main() {
 
 		source := "CH"
 		sourceId, err := getDataSourceId(source)
+		err = nil
 		uniqueEntries := map[string]co.SwitzerlandBankFileEntry{}
 
 		if err != nil {
@@ -258,7 +258,7 @@ func main() {
 		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
 
 		for entry := range ch {
-			chEntry := entry.(co.SwitzerlandBankFileEntry)
+			chEntry := entry.(*co.SwitzerlandBankFileEntry)
 
 			if strings.TrimSpace(chEntry.BankCode) == "" {
 				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
@@ -272,7 +272,7 @@ func main() {
 
 			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
 
-			uniqueEntries[chEntry.BankCode] = chEntry
+			uniqueEntries[chEntry.BankCode] = *chEntry
 		}
 
 		for _, chEntry := range uniqueEntries {
@@ -356,7 +356,7 @@ func main() {
 		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
 
 		for entry := range ch {
-			chEntry := entry.(co.AustriaBankFileEntry)
+			chEntry := entry.(*co.AustriaBankFileEntry)
 
 			if strings.TrimSpace(chEntry.Bankcode) == "" {
 				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
@@ -370,7 +370,7 @@ func main() {
 
 			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
 
-			uniqueEntries[chEntry.Bankcode] = chEntry
+			uniqueEntries[chEntry.Bankcode] = *chEntry
 		}
 
 		for _, chEntry := range uniqueEntries {
