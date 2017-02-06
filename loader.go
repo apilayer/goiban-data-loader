@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/stefan93/goiban"
-	co "github.com/stefan93/goiban/countries"
+	"github.com/fourcube/goiban"
+	co "github.com/fourcube/goiban/countries"
 )
 
 var (
