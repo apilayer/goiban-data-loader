@@ -240,56 +240,6 @@ func main() {
 				log.Fatal(err, luEntry)
 			}
 		}
-
-	case "ch":
-		go goiban.ReadFileToEntries(switzerlandFile, &co.SwitzerlandBankFileEntry{}, ch)
-
-		source := "CH"
-		sourceId, err := getDataSourceId(source)
-		uniqueEntries := map[string]co.SwitzerlandBankFileEntry{}
-
-		if err != nil {
-			log.Fatalf("Aborting: %v", err)
-			return
-		}
-
-		log.Printf("Removing entries for source '%v'", source)
-		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
-
-		for entry := range ch {
-			chEntry := entry.(*co.SwitzerlandBankFileEntry)
-
-			if strings.TrimSpace(chEntry.BankCode) == "" {
-				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
-				continue
-			}
-
-			if strings.TrimSpace(chEntry.Bic) == "" {
-				log.Printf("Skipping invalid entry without BIC %v", chEntry)
-				continue
-			}
-
-			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
-
-			uniqueEntries[chEntry.BankCode] = *chEntry
-		}
-
-		for _, chEntry := range uniqueEntries {
-			_, err := INSERT_BANK_DATA.Exec(
-				sourceId,
-				chEntry.BankCode,
-				chEntry.BankName,
-				chEntry.Zip,
-				chEntry.Place,
-				chEntry.Bic,
-				source,
-				"")
-			if err == nil {
-				rows++
-			} else {
-				log.Fatal(err, chEntry)
-			}
-		}
 	case "li":
 		go goiban.ReadFileToEntries(liechtensteinFile, &co.LiechtensteinFileEntry{}, ch)
 
