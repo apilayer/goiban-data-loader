@@ -2,4 +2,5 @@ NL: http://www.betaalvereniging.nl/wp-uploads/2013/07/BIC-lijst-NL.xlsx
 BE: https://www.nbb.be/de/zahlungssysteme/zahlungsnormen/bankidentifikationscodes
 DE: https://www.bundesbank.de/Redaktion/DE/Standardartikel/Aufgaben/Unbarer_Zahlungsverkehr/bankleitzahlen_download.html
 LU: http://www.abbl.lu/en/private-clients/banking-standards/iban-and-bic-codes-2
-CH: https://www.six-interbank-clearing.com/dam/downloads/bc-bank-master/bcbankenstamm_d.xls
+LI: 
+AT: https://www.oenb.at/idakilz/kiverzeichnis?action=downloadAllData
