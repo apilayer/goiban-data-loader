@@ -13,13 +13,15 @@ import (
 )
 
 var (
-	db              *sql.DB
-	err             error
-	bundesbankFile  = "data/bundesbank.txt"
-	nbbFile         = "data/nbb.xlsx"
-	netherlandsFile = "data/nl.xlsx"
-	luxembourgFile  = "data/lu.xlsx"
-	switzerlandFile = "data/ch.xlsx"
+	db                *sql.DB
+	err               error
+	bundesbankFile    = "data/bundesbank.txt"
+	nbbFile           = "data/nbb.xlsx"
+	netherlandsFile   = "data/nl.xlsx"
+	luxembourgFile    = "data/lu.xlsx"
+	switzerlandFile   = "data/ch.xlsx"
+	austriaFile       = "data/at.csv"
+	liechtensteinFile = "data/li.xlsx"
 
 	PREP_ERR         error
 	INSERT_BANK_DATA *sql.Stmt
@@ -64,13 +66,12 @@ func getDataSourceId(sourceName string) (int, error) {
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage: goiban-data-loader <src> <dburl>")
-		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|nl|lu|ch> root:root@/goiban?charset=utf8")
+		fmt.Println("e.g: goiban-data-loader <bundesbank|nbb|nl|lu|at|ch|li> root:root@/goiban?charset=utf8")
 		return
 	}
 
 	target := os.Args[1]
 	db, err = sql.Open("mysql", os.Args[2])
-
 	if err != nil {
 		log.Fatalf("DB Connection error: %v", err)
 		return
@@ -271,6 +272,104 @@ func main() {
 			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
 
 			uniqueEntries[chEntry.Bankcode] = chEntry
+		}
+
+		for _, chEntry := range uniqueEntries {
+			_, err := INSERT_BANK_DATA.Exec(
+				sourceId,
+				chEntry.Bankcode,
+				chEntry.Name,
+				"",
+				"",
+				chEntry.Bic,
+				source,
+				"")
+			if err == nil {
+				rows++
+			} else {
+				log.Fatal(err, chEntry)
+			}
+		}
+
+	case "li":
+		go goiban.ReadFileToEntries(liechtensteinFile, &co.LiechtensteinFileEntry{}, ch)
+
+		source := "LI"
+		sourceId, err := getDataSourceId(source)
+		uniqueEntries := map[string]co.LiechtensteinFileEntry{}
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			chEntry := entry.(co.LiechtensteinFileEntry)
+
+			if strings.TrimSpace(chEntry.Bankcode) == "" {
+				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
+				continue
+			}
+
+			if strings.TrimSpace(chEntry.Bic) == "" {
+				log.Printf("Skipping invalid entry without BIC %v", chEntry)
+				continue
+			}
+
+			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
+
+			uniqueEntries[chEntry.Bankcode] = chEntry
+		}
+
+		for _, chEntry := range uniqueEntries {
+			_, err := INSERT_BANK_DATA.Exec(
+				sourceId,
+				chEntry.Bankcode,
+				chEntry.Name,
+				"",
+				"",
+				chEntry.Bic,
+				source,
+				"")
+			if err == nil {
+				rows++
+			} else {
+				log.Fatal(err, chEntry)
+			}
+		}
+	case "at":
+		go goiban.ReadFileToEntries(austriaFile, &co.AustriaBankFileEntry{}, ch)
+
+		source := "AT"
+		sourceId, err := getDataSourceId(source)
+		uniqueEntries := map[string]co.AustriaBankFileEntry{}
+
+		if err != nil {
+			log.Fatalf("Aborting: %v", err)
+			return
+		}
+
+		log.Printf("Removing entries for source '%v'", source)
+		db.Exec("DELETE FROM BANK_DATA WHERE source = ?", sourceId)
+
+		for entry := range ch {
+			chEntry := entry.(*co.AustriaBankFileEntry)
+
+			if strings.TrimSpace(chEntry.Bankcode) == "" {
+				log.Printf("Skipping invalid entry without Bankcode %v", chEntry)
+				continue
+			}
+
+			if strings.TrimSpace(chEntry.Bic) == "" {
+				log.Printf("Skipping invalid entry without BIC %v", chEntry)
+				continue
+			}
+
+			chEntry.Bic = strings.Replace(chEntry.Bic, " ", "", -1)
+			uniqueEntries[chEntry.Bankcode] = *chEntry
 		}
 
 		for _, chEntry := range uniqueEntries {
