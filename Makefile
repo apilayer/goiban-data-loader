@@ -18,6 +18,8 @@ load: goiban-data-loader
 	./goiban-data-loader lu "$(DATABASE_URL)"
 	./goiban-data-loader nl "$(DATABASE_URL)"
 	./goiban-data-loader nbb "$(DATABASE_URL)"
+	./goiban-data-loader at "$(DATABASE_URL)"
+	./goiban-data-loader li "$(DATABASE_URL)"
 
 load_ch: goiban-data-loader
 	./goiban-data-loader ch "$(DATABASE_URL)"

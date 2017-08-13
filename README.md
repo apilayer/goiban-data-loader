@@ -9,12 +9,30 @@ Currently supported data sources:
 - lu
 - nbb
 - nl
+- at
+- ch
+- li
 
 Setting up the database
 -------
 
 ```bash
 $ DATABASE_URL="mysql_user:password@localhost/goiban?charset=utf8" make migrate
+```
+
+Providing new data
+-------
+
+Data files provided by some european bank institutes (e.g Austria and Germany) is sometimes provided as a ISO-8859-1 encoded file.
+It should be converted to UTF-8 before being committed to the repository.
+
+This is possible using `iconv`.
+
+```bash
+# Austria
+$ iconv -f iso-8859-1 -t utf8 at_original.csv > at.csv
+# Germany
+$ iconv -f iso-8859-1 -t utf8 bundesbank_original.txt > bundesbank.txt
 ```
 
 Running
