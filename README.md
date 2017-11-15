@@ -17,7 +17,7 @@ Setting up the database
 -------
 
 ```bash
-$ DATABASE_URL="mysql_user:password@localhost/goiban?charset=utf8" make migrate
+$ DATABASE_URL="mysql_user:password@tcp(localhost)/goiban?charset=utf8" make migrate
 ```
 
 Providing new data
@@ -41,13 +41,13 @@ Running
 You should load the data into a database called 'goiban'.
 
 ```bash
-$ go run loader.go bundesbank mysql_user:password@localhost/goiban?charset=utf8
+$ go run loader.go bundesbank "mysql_user:password@tcp(localhost)/goiban?charset=utf8"
 ```
 
 or to load all data
 
 ```bash
-$ DATABASE_URL="mysql_user:password@localhost/goiban?charset=utf8" make load
+$ DATABASE_URL="mysql_user:password@tcp(localhost)/goiban?charset=utf8" make load
 ```
 
 MySQL development instance
