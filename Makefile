@@ -8,10 +8,10 @@ goiban-data-loader: loader.go
 	go build
 
 migrate: $(MIGRATE_BIN)
-	$(MIGRATE_BIN) up
+	$(MIGRATE_BIN) -dir db/migrations mysql "$(DATABASE_URL)" up
 
 down: $(MIGRATE_BIN)
-	$(MIGRATE_BIN) down
+	$(MIGRATE_BIN) mysql down
 
 load: goiban-data-loader
 	./goiban-data-loader bundesbank "$(DATABASE_URL)"
