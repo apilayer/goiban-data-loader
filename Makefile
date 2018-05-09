@@ -2,7 +2,7 @@ MIGRATE_BIN = $(GOPATH)/bin/goose
 DATABASE_URL ?= root:root@tcp(localhost:3306)/goiban?charset=utf8
 
 $(MIGRATE_BIN):
-	go get bitbucket.org/liamstask/goose/cmd/goose
+	go get -u github.com/pressly/goose/cmd/goose
 
 goiban-data-loader: loader.go
 	go build
